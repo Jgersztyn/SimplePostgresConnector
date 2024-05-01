@@ -1,0 +1,15 @@
+@SimplePostgresConnector_HostAddress = http://localhost:5277
+
+GET {{SimplePostgresConnector_HostAddress}}/get-weather/
+Accept: application/json
+
+GET {{SimplePostgresConnector_HostAddress}}/get-employees/
+Accept: application/json
+
+POST {{SimplePostgresConnector_HostAddress}}/add-employee/
+Accept: application/json
+
+POST {{SimplePostgresConnector_HostAddress}}/add-company/
+Accept: application/json
+
+###
