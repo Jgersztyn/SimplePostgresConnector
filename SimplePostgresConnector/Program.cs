@@ -39,13 +39,35 @@ app.MapGet("/get-weather", () =>
 .WithName("GetWeather")
 .WithOpenApi();
 
-app.MapGet("/get-employees", () =>
+app.MapGet("/get-employees/{title}", (string title) =>
 {
-    var employees = DatabaseCalls.GetEmployeesBasedOnTitle("Manager");
+    // Format user input for Postgres
+    var formattedTitle = string.Format($"\"{title}\"");
+    var employees = DatabaseCalls.GetEmployeesBasedOnTitle(formattedTitle);
 
     return employees;
 })
 .WithName("GetEmployees")
+.WithOpenApi();
+
+app.MapPost("/add-employee", (string employeeName, string employeeTitle, int companyId) =>
+{
+    DatabaseCalls.InsertEmployee(employeeName, employeeTitle, companyId);
+
+    // return the newly created employee
+    return Results.Created("/get-employees", null);
+})
+.WithName("AddEmployee")
+.WithOpenApi();
+
+app.MapPost("/add-company", (string companyName, string address, DateTime openDate) =>
+{
+    DatabaseCalls.InsertCompany(companyName, address, openDate);
+
+    // return the newly created company
+    return Results.Created("/add-company", null);
+})
+.WithName("AddCompany")
 .WithOpenApi();
 
 app.Run();
