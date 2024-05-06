@@ -19,35 +19,22 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-var summaries = new[]
+app.MapGet("/get-employees", () =>
 {
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
-
-app.MapGet("/get-weather", () =>
-{
-    var forecast = Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
-})
-.WithName("GetWeather")
-.WithOpenApi();
-
-app.MapGet("/get-employees/{title}", (string title) =>
-{
-    // Format user input for Postgres
-    var formattedTitle = string.Format($"\"{title}\"");
-    var employees = DatabaseCalls.GetEmployeesBasedOnTitle(formattedTitle);
+    var employees = DatabaseCalls.GetEmployees();
 
     return employees;
 })
 .WithName("GetEmployees")
+.WithOpenApi();
+
+app.MapGet("/get-employees/{title}", (string title) =>
+{
+    var employees = DatabaseCalls.GetEmployeesBasedOnTitle(title);
+
+    return employees;
+})
+.WithName("GetEmployees/{title}")
 .WithOpenApi();
 
 app.MapPost("/add-employee", (string employeeName, string employeeTitle, int companyId) =>
@@ -71,8 +58,3 @@ app.MapPost("/add-company", (string companyName, string address, DateTime openDa
 .WithOpenApi();
 
 app.Run();
-
-internal record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}

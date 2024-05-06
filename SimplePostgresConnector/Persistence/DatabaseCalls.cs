@@ -5,9 +5,49 @@ namespace SimplePostgresConnector.Persistence;
 
 public static class DatabaseCalls
 {
-    public static List<Employee> GetEmployeesBasedOnTitle(string title)
+    public static List<Employee> GetEmployees()
     {
         // Obviously not best practice, but these database calls are for demonstration
+        const string connectionString = "";
+
+        List<Employee> resultList = new List<Employee>();
+
+        using (var conn = new NpgsqlConnection(connectionString))
+        {
+            conn.Open();
+
+            string sql = "SELECT public.\"Employees\".\"Id\", public.\"Employees\".\"Name\", public.\"Employees\".\"Title\" FROM public.\"Employees\"" +
+                         "INNER JOIN public.\"Companies\" ON public.\"Employees\".\"CompanyId\" = public.\"Companies\".\"Id\"";
+
+            using (var cmd = new NpgsqlCommand(sql, conn))
+            {
+                using (var reader = cmd.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        var id = reader.GetInt32(0);
+                        var name = reader.GetString(1);
+                        var employeeTitle = reader.GetString(2);
+
+                        Employee employee = new Employee
+                        {
+                            Id = id,
+                            Name = name,
+                            Title = employeeTitle,
+                            Company = new Company()
+                        };
+
+                        resultList.Add(employee);
+                    }
+                }
+            }
+        }
+
+        return resultList;
+    }
+
+    public static List<Employee> GetEmployeesBasedOnTitle(string title)
+    {
         const string connectionString = "";
 
         List<Employee> resultList = new List<Employee>();
@@ -19,7 +59,7 @@ public static class DatabaseCalls
             // Query the Employees based on title
             string sql = "SELECT public.\"Employees\".\"Id\", public.\"Employees\".\"Name\", public.\"Employees\".\"Title\" FROM public.\"Employees\"" +
                          "INNER JOIN public.\"Companies\" ON public.\"Employees\".\"CompanyId\" = public.\"Companies\".\"Id\"" +
-                         "WHERE \"Title\" != @title";
+                         "WHERE \"Title\" = @title";
 
             using (var cmd = new NpgsqlCommand(sql, conn))
             {
